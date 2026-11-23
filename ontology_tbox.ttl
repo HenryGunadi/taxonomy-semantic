@@ -1,0 +1,814 @@
+@prefix ex:      <http://example.org/hukumtanah#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+#################################################################
+# 0. HEADER ONTOLOGI
+#################################################################
+
+<http://example.org/hukumtanah> a owl:Ontology ;
+    dcterms:title "T-Box Asisten AI Bantuan Hukum Pertanahan dan Putusan Pengadilan"@id ;
+    dcterms:description "Skema ontologi terpusat (T-Box) untuk topik nomor 04 proyek SDG Web Semantik (Goal 16: Perdamaian, Keadilan, dan Kelembagaan Tangguh). Sumber A-Box utama: dataset putusan Mahkamah Agung RI (ID_Supreme_Court_Parquet) dan regulasi pertanahan."@id ;
+    owl:versionInfo "1.0" .
+
+dcterms:title       a owl:AnnotationProperty .
+dcterms:description a owl:AnnotationProperty .
+
+#################################################################
+# 1. PROPERTI PENCOCOKAN SINONIM (dipakai Tahap 2: SBERT / NER)
+#################################################################
+
+ex:search_terms a owl:DatatypeProperty ;
+    rdfs:label "search_terms"@id ;
+    rdfs:comment "Daftar kata/frasa sinonim yang dipakai untuk memetakan teks mentah ke kelas atau konsep T-Box. Satu nilai literal per sinonim."@id ;
+    rdfs:range xsd:string .
+
+#################################################################
+# 2. HIERARKI KELAS (rdfs:subClassOf)
+#################################################################
+
+# ---------- 2.1 Dokumen hukum ----------
+
+ex:DokumenHukum a owl:Class ;
+    rdfs:label "Dokumen Hukum"@id ;
+    rdfs:comment "Kelas induk dokumen hukum: putusan, peraturan perundang-undangan, dan sertifikat tanah."@id .
+
+ex:Putusan a owl:Class ;
+    rdfs:subClassOf ex:DokumenHukum ;
+    rdfs:label "Putusan"@id ;
+    rdfs:comment "Putusan pengadilan. Satu baris dataset ID_Supreme_Court_Parquet (kolom id) menjadi satu individu Putusan."@id ;
+    ex:search_terms "putusan", "vonis", "keputusan pengadilan", "putusan pengadilan", "putusan mahkamah agung" .
+
+ex:PutusanPidana a owl:Class ;
+    rdfs:subClassOf ex:Putusan ;
+    rdfs:label "Putusan Pidana"@id ;
+    ex:search_terms "putusan pidana", "perkara pidana" .
+
+ex:PutusanPidanaUmum a owl:Class ;
+    rdfs:subClassOf ex:PutusanPidana ;
+    rdfs:label "Putusan Pidana Umum"@id ;
+    rdfs:comment "Padanan nilai klasifikasi 'pidana-umum' pada dataset."@id ;
+    ex:search_terms "pidana umum", "pid.b", "pid b" .
+
+ex:PutusanPidanaKhusus a owl:Class ;
+    rdfs:subClassOf ex:PutusanPidana ;
+    rdfs:label "Putusan Pidana Khusus"@id ;
+    rdfs:comment "Padanan nilai klasifikasi 'pidana-khusus' pada dataset."@id ;
+    ex:search_terms "pidana khusus", "pid.sus", "pid sus" .
+
+ex:PutusanPerdata a owl:Class ;
+    rdfs:subClassOf ex:Putusan ;
+    rdfs:label "Putusan Perdata"@id ;
+    rdfs:comment "Perluasan skema: sengketa tanah pada umumnya perkara perdata. Belum ada datanya di dataset utama."@id ;
+    ex:search_terms "putusan perdata", "gugatan perdata", "perkara perdata" .
+
+ex:PutusanTataUsahaNegara a owl:Class ;
+    rdfs:subClassOf ex:Putusan ;
+    rdfs:label "Putusan Tata Usaha Negara"@id ;
+    rdfs:comment "Perluasan skema: sengketa keputusan pejabat (misal pembatalan sertifikat). Belum ada datanya di dataset utama."@id ;
+    ex:search_terms "putusan ptun", "tata usaha negara", "gugatan tun" .
+
+ex:PutusanPertanahan a owl:Class ;
+    rdfs:subClassOf ex:Putusan ;
+    rdfs:label "Putusan Pertanahan"@id ;
+    rdfs:comment "Putusan yang perkaranya berkaitan dengan tanah. Keanggotaannya disimpulkan oleh reasoner (lihat bagian 6), tidak diisi manual."@id ;
+    ex:search_terms "putusan tanah", "putusan sengketa tanah", "putusan agraria", "putusan pertanahan" .
+
+ex:PeraturanPerundangan a owl:Class ;
+    rdfs:subClassOf ex:DokumenHukum ;
+    rdfs:label "Peraturan Perundang-undangan"@id ;
+    ex:search_terms "peraturan", "undang-undang", "regulasi", "perundang-undangan" .
+
+ex:UndangUndang a owl:Class ;
+    rdfs:subClassOf ex:PeraturanPerundangan ;
+    rdfs:label "Undang-Undang"@id ;
+    ex:search_terms "undang-undang", "uu", "undang undang" .
+
+ex:PeraturanPemerintah a owl:Class ;
+    rdfs:subClassOf ex:PeraturanPerundangan ;
+    rdfs:label "Peraturan Pemerintah"@id ;
+    ex:search_terms "peraturan pemerintah", "pp" .
+
+ex:PeraturanMenteri a owl:Class ;
+    rdfs:subClassOf ex:PeraturanPerundangan ;
+    rdfs:label "Peraturan Menteri"@id ;
+    ex:search_terms "peraturan menteri", "permen", "permen atr/bpn" .
+
+ex:PeraturanPertanahan a owl:Class ;
+    rdfs:subClassOf ex:PeraturanPerundangan ;
+    rdfs:label "Peraturan Pertanahan"@id ;
+    rdfs:comment "Peraturan yang mengatur tanah/agraria, misalnya UU Pokok Agraria dan peraturan pendaftaran tanah. Dapat dipakai bersamaan dengan UndangUndang/PeraturanPemerintah/PeraturanMenteri."@id ;
+    ex:search_terms "peraturan pertanahan", "hukum agraria", "undang-undang pokok agraria", "uupa", "pendaftaran tanah" .
+
+ex:SertifikatTanah a owl:Class ;
+    rdfs:subClassOf ex:DokumenHukum ;
+    rdfs:label "Sertifikat Tanah"@id ;
+    ex:search_terms "sertifikat tanah", "sertipikat", "sertifikat", "bukti kepemilikan tanah", "bukti hak" .
+
+# ---------- 2.2 Pasal ----------
+
+ex:Pasal a owl:Class ;
+    rdfs:label "Pasal"@id ;
+    rdfs:comment "Pasal atau ketentuan dalam suatu peraturan yang dirujuk putusan (dakwaan, tuntutan, pertimbangan)."@id ;
+    ex:search_terms "pasal", "ayat", "melanggar pasal", "ketentuan pasal" .
+
+ex:PasalPertanahan a owl:Class ;
+    rdfs:subClassOf ex:Pasal ;
+    rdfs:label "Pasal Pertanahan"@id ;
+    rdfs:comment "Pasal yang terdapat dalam peraturan pertanahan. Keanggotaan disimpulkan reasoner."@id .
+
+# ---------- 2.3 Bagian putusan (selaras dengan tag di kolom paragraphs dataset) ----------
+
+ex:BagianPutusan a owl:Class ;
+    rdfs:label "Bagian Putusan"@id ;
+    rdfs:comment "Satu bagian struktural dari putusan. Dipakai sebagai unit potongan teks untuk GraphRAG dan semantic search."@id .
+
+ex:BagianKepalaPutusan a owl:Class ;
+    rdfs:subClassOf ex:BagianPutusan ;
+    rdfs:label "Bagian Kepala Putusan"@id ;
+    rdfs:comment "Tag dataset: kepala_putusan."@id ;
+    ex:search_terms "kepala putusan", "demi keadilan berdasarkan ketuhanan yang maha esa", "nomor putusan" .
+
+ex:BagianIdentitas a owl:Class ;
+    rdfs:subClassOf ex:BagianPutusan ;
+    rdfs:label "Bagian Identitas"@id ;
+    rdfs:comment "Tag dataset: identitas."@id ;
+    ex:search_terms "identitas terdakwa", "nama lengkap", "tempat lahir", "pekerjaan" .
+
+ex:BagianRiwayatPenahanan a owl:Class ;
+    rdfs:subClassOf ex:BagianPutusan ;
+    rdfs:label "Bagian Riwayat Penahanan"@id ;
+    rdfs:comment "Tag dataset: riwayat_penahanan."@id ;
+    ex:search_terms "penahanan", "ditahan", "penangkapan" .
+
+ex:BagianRiwayatPerkara a owl:Class ;
+    rdfs:subClassOf ex:BagianPutusan ;
+    rdfs:label "Bagian Riwayat Perkara"@id ;
+    rdfs:comment "Tag dataset: riwayat_perkara."@id ;
+    ex:search_terms "duduk perkara", "jalannya persidangan", "riwayat perkara" .
+
+ex:BagianRiwayatTuntutan a owl:Class ;
+    rdfs:subClassOf ex:BagianPutusan ;
+    rdfs:label "Bagian Riwayat Tuntutan"@id ;
+    rdfs:comment "Tag dataset: riwayat_tuntutan."@id ;
+    ex:search_terms "surat tuntutan", "menuntut", "tuntutan jaksa" .
+
+ex:BagianRiwayatDakwaan a owl:Class ;
+    rdfs:subClassOf ex:BagianPutusan ;
+    rdfs:label "Bagian Riwayat Dakwaan"@id ;
+    rdfs:comment "Tag dataset: riwayat_dakwaan."@id ;
+    ex:search_terms "surat dakwaan", "didakwa", "dakwaan jaksa" .
+
+ex:BagianFakta a owl:Class ;
+    rdfs:subClassOf ex:BagianPutusan ;
+    rdfs:label "Bagian Fakta"@id ;
+    rdfs:comment "Tag dataset: fakta."@id ;
+    ex:search_terms "keterangan saksi", "barang bukti", "fakta persidangan" .
+
+ex:BagianFaktaHukum a owl:Class ;
+    rdfs:subClassOf ex:BagianPutusan ;
+    rdfs:label "Bagian Fakta Hukum"@id ;
+    rdfs:comment "Tag dataset: fakta_hukum."@id ;
+    ex:search_terms "fakta hukum", "fakta-fakta hukum" .
+
+ex:BagianPertimbanganHukum a owl:Class ;
+    rdfs:subClassOf ex:BagianPutusan ;
+    rdfs:label "Bagian Pertimbangan Hukum"@id ;
+    rdfs:comment "Tag dataset: pertimbangan_hukum."@id ;
+    ex:search_terms "menimbang", "pertimbangan hukum", "majelis hakim berpendapat" .
+
+ex:BagianAmarPutusan a owl:Class ;
+    rdfs:subClassOf ex:BagianPutusan ;
+    rdfs:label "Bagian Amar Putusan"@id ;
+    rdfs:comment "Tag dataset: amar_putusan."@id ;
+    ex:search_terms "mengadili", "amar putusan", "menyatakan", "menjatuhkan pidana" .
+
+ex:BagianPenutup a owl:Class ;
+    rdfs:subClassOf ex:BagianPutusan ;
+    rdfs:label "Bagian Penutup"@id ;
+    rdfs:comment "Tag dataset: penutup."@id ;
+    ex:search_terms "demikianlah diputuskan", "penutup", "musyawarah majelis hakim" .
+
+# ---------- 2.3b Perkara dan jenis sengketa tanah ----------
+
+ex:Perkara a owl:Class ;
+    rdfs:label "Perkara"@id ;
+    rdfs:comment "Perkara hukum yang diperiksa pengadilan. Satu perkara diputus oleh satu atau lebih putusan (tingkat pertama, banding, kasasi)."@id ;
+    ex:search_terms "perkara", "kasus", "sengketa" .
+
+ex:PerkaraPidana a owl:Class ;
+    rdfs:subClassOf ex:Perkara ;
+    rdfs:label "Perkara Pidana"@id .
+
+ex:PerkaraPerdata a owl:Class ;
+    rdfs:subClassOf ex:Perkara ;
+    rdfs:label "Perkara Perdata"@id .
+
+ex:PerkaraTUN a owl:Class ;
+    rdfs:subClassOf ex:Perkara ;
+    rdfs:label "Perkara Tata Usaha Negara"@id .
+
+ex:PerkaraPertanahan a owl:Class ;
+    rdfs:subClassOf ex:Perkara ;
+    rdfs:label "Perkara Pertanahan"@id ;
+    rdfs:comment "Perkara yang menyangkut tanah. Keanggotaan disimpulkan reasoner."@id ;
+    ex:search_terms "perkara tanah", "sengketa tanah", "kasus pertanahan" .
+
+ex:JenisSengketaTanah a owl:Class ;
+    rdfs:label "Jenis Sengketa Tanah"@id ;
+    rdfs:comment "Taksonomi jenis masalah hukum pertanahan. Dipakai asisten AI untuk mengklasifikasikan pertanyaan pengguna."@id .
+
+ex:SengketaKepemilikanTanah a owl:Class ;
+    rdfs:subClassOf ex:JenisSengketaTanah ;
+    rdfs:label "Sengketa Kepemilikan Tanah"@id ;
+    ex:search_terms "sengketa kepemilikan", "klaim kepemilikan tanah", "siapa pemilik tanah", "hak atas tanah" .
+
+ex:SengketaBatasTanah a owl:Class ;
+    rdfs:subClassOf ex:JenisSengketaTanah ;
+    rdfs:label "Sengketa Batas Tanah"@id ;
+    ex:search_terms "sengketa batas", "batas tanah", "patok tanah", "batas bidang tanah" .
+
+ex:SengketaWarisTanah a owl:Class ;
+    rdfs:subClassOf ex:JenisSengketaTanah ;
+    rdfs:label "Sengketa Waris Tanah"@id ;
+    ex:search_terms "tanah warisan", "sengketa waris", "ahli waris tanah", "harta peninggalan" .
+
+ex:SengketaJualBeliTanah a owl:Class ;
+    rdfs:subClassOf ex:JenisSengketaTanah ;
+    rdfs:label "Sengketa Jual Beli Tanah"@id ;
+    ex:search_terms "jual beli tanah", "akta jual beli", "ajb", "wanprestasi jual beli tanah" .
+
+ex:PenyerobotanTanah a owl:Class ;
+    rdfs:subClassOf ex:JenisSengketaTanah ;
+    rdfs:label "Penyerobotan Tanah"@id ;
+    ex:search_terms "penyerobotan tanah", "serobot tanah", "menduduki tanah tanpa hak", "pemakaian tanah tanpa izin" .
+
+ex:PemalsuanDokumenTanah a owl:Class ;
+    rdfs:subClassOf ex:JenisSengketaTanah ;
+    rdfs:label "Pemalsuan Dokumen Tanah"@id ;
+    ex:search_terms "pemalsuan surat tanah", "pemalsuan sertifikat", "surat palsu tanah", "mafia tanah" .
+
+ex:SengketaPengadaanTanah a owl:Class ;
+    rdfs:subClassOf ex:JenisSengketaTanah ;
+    rdfs:label "Sengketa Pengadaan Tanah"@id ;
+    ex:search_terms "pengadaan tanah", "ganti rugi tanah", "pembebasan lahan", "tanah untuk kepentingan umum" .
+
+ex:SertifikatGanda a owl:Class ;
+    rdfs:subClassOf ex:JenisSengketaTanah ;
+    rdfs:label "Sertifikat Ganda"@id ;
+    ex:search_terms "sertifikat ganda", "sertipikat ganda", "tumpang tindih sertifikat", "overlapping sertifikat" .
+
+# ---------- 2.4 Pihak dan aparat penegak hukum ----------
+
+ex:Orang a owl:Class ;
+    rdfs:label "Orang"@id ;
+    rdfs:comment "Orang perseorangan yang disebut dalam dokumen hukum."@id .
+
+ex:PihakBerperkara a owl:Class ;
+    rdfs:subClassOf ex:Orang ;
+    rdfs:label "Pihak Berperkara"@id ;
+    ex:search_terms "pihak berperkara", "para pihak" .
+
+ex:Terdakwa a owl:Class ;
+    rdfs:subClassOf ex:PihakBerperkara ;
+    rdfs:label "Terdakwa"@id ;
+    ex:search_terms "terdakwa", "pelaku", "para terdakwa" .
+
+ex:Penggugat a owl:Class ;
+    rdfs:subClassOf ex:PihakBerperkara ;
+    rdfs:label "Penggugat"@id ;
+    ex:search_terms "penggugat", "para penggugat" .
+
+ex:Tergugat a owl:Class ;
+    rdfs:subClassOf ex:PihakBerperkara ;
+    rdfs:label "Tergugat"@id ;
+    ex:search_terms "tergugat", "para tergugat" .
+
+ex:Saksi a owl:Class ;
+    rdfs:subClassOf ex:Orang ;
+    rdfs:label "Saksi"@id ;
+    ex:search_terms "saksi", "keterangan saksi", "saksi korban" .
+
+ex:PenegakHukum a owl:Class ;
+    rdfs:subClassOf ex:Orang ;
+    rdfs:label "Penegak Hukum"@id .
+
+ex:Hakim a owl:Class ;
+    rdfs:subClassOf ex:PenegakHukum ;
+    rdfs:label "Hakim"@id ;
+    ex:search_terms "hakim", "majelis hakim", "majelis" .
+
+ex:HakimKetua a owl:Class ;
+    rdfs:subClassOf ex:Hakim ;
+    rdfs:label "Hakim Ketua"@id ;
+    ex:search_terms "hakim ketua", "ketua majelis" .
+
+ex:HakimAnggota a owl:Class ;
+    rdfs:subClassOf ex:Hakim ;
+    rdfs:label "Hakim Anggota"@id ;
+    ex:search_terms "hakim anggota", "anggota majelis" .
+
+ex:Jaksa a owl:Class ;
+    rdfs:subClassOf ex:PenegakHukum ;
+    rdfs:label "Jaksa"@id ;
+    ex:search_terms "jaksa", "jaksa penuntut umum", "jpu", "penuntut umum" .
+
+ex:Panitera a owl:Class ;
+    rdfs:subClassOf ex:PenegakHukum ;
+    rdfs:label "Panitera"@id ;
+    ex:search_terms "panitera", "panitera pengganti" .
+
+ex:PenasihatHukum a owl:Class ;
+    rdfs:subClassOf ex:PenegakHukum ;
+    rdfs:label "Penasihat Hukum"@id ;
+    ex:search_terms "penasihat hukum", "pengacara", "advokat", "kuasa hukum" .
+
+# ---------- 2.5 Lembaga ----------
+
+ex:Lembaga a owl:Class ;
+    rdfs:label "Lembaga"@id ;
+    rdfs:comment "Lembaga atau instansi yang terlibat dalam proses hukum pertanahan."@id .
+
+ex:Pengadilan a owl:Class ;
+    rdfs:subClassOf ex:Lembaga ;
+    rdfs:label "Pengadilan"@id ;
+    ex:search_terms "pengadilan", "mahkamah", "peradilan" .
+
+ex:PengadilanNegeri a owl:Class ;
+    rdfs:subClassOf ex:Pengadilan ;
+    rdfs:label "Pengadilan Negeri"@id ;
+    ex:search_terms "pengadilan negeri", "pn", "pengadilan tingkat pertama" .
+
+ex:PengadilanTinggi a owl:Class ;
+    rdfs:subClassOf ex:Pengadilan ;
+    rdfs:label "Pengadilan Tinggi"@id ;
+    ex:search_terms "pengadilan tinggi", "pt", "tingkat banding", "banding" .
+
+ex:MahkamahAgung a owl:Class ;
+    rdfs:subClassOf ex:Pengadilan ;
+    rdfs:label "Mahkamah Agung"@id ;
+    ex:search_terms "mahkamah agung", "ma", "ma ri", "kasasi", "tingkat kasasi" .
+
+ex:Kejaksaan a owl:Class ;
+    rdfs:subClassOf ex:Lembaga ;
+    rdfs:label "Kejaksaan"@id ;
+    ex:search_terms "kejaksaan", "kejari", "kejati", "kejaksaan negeri" .
+
+ex:LembagaPertanahan a owl:Class ;
+    rdfs:subClassOf ex:Lembaga ;
+    rdfs:label "Lembaga Pertanahan"@id ;
+    rdfs:comment "Kementerian ATR/BPN beserta Kantor Pertanahan yang menerbitkan dan mendaftarkan hak atas tanah."@id ;
+    ex:search_terms "bpn", "badan pertanahan nasional", "kantor pertanahan", "atr/bpn", "kementerian atr" .
+
+# ---------- 2.6 Wilayah ----------
+
+ex:Wilayah a owl:Class ;
+    rdfs:label "Wilayah"@id ;
+    rdfs:comment "Satuan wilayah administratif. Kandidat penautan owl:sameAs ke Wikidata/DBpedia pada Tahap 3."@id .
+
+ex:Provinsi a owl:Class ;
+    rdfs:subClassOf ex:Wilayah ;
+    rdfs:label "Provinsi"@id ;
+    ex:search_terms "provinsi", "prov." .
+
+ex:KabupatenKota a owl:Class ;
+    rdfs:subClassOf ex:Wilayah ;
+    rdfs:label "Kabupaten/Kota"@id ;
+    ex:search_terms "kabupaten", "kota", "kab." .
+
+# ---------- 2.7 Objek tanah dan hak atas tanah ----------
+
+ex:ObjekTanah a owl:Class ;
+    rdfs:label "Objek Tanah"@id ;
+    rdfs:comment "Bidang tanah yang menjadi objek perkara."@id ;
+    ex:search_terms "tanah", "bidang tanah", "lahan", "persil", "objek sengketa" .
+
+ex:HakAtasTanah a owl:Class ;
+    rdfs:label "Hak atas Tanah"@id ;
+    rdfs:comment "Jenis hak atas tanah menurut hukum agraria."@id ;
+    ex:search_terms "hak atas tanah", "status hak" .
+
+ex:HakMilik a owl:Class ;
+    rdfs:subClassOf ex:HakAtasTanah ;
+    rdfs:label "Hak Milik"@id ;
+    ex:search_terms "hak milik", "shm", "sertifikat hak milik" .
+
+ex:HakGunaUsaha a owl:Class ;
+    rdfs:subClassOf ex:HakAtasTanah ;
+    rdfs:label "Hak Guna Usaha"@id ;
+    ex:search_terms "hak guna usaha", "hgu" .
+
+ex:HakGunaBangunan a owl:Class ;
+    rdfs:subClassOf ex:HakAtasTanah ;
+    rdfs:label "Hak Guna Bangunan"@id ;
+    ex:search_terms "hak guna bangunan", "hgb", "shgb" .
+
+ex:HakPakai a owl:Class ;
+    rdfs:subClassOf ex:HakAtasTanah ;
+    rdfs:label "Hak Pakai"@id ;
+    ex:search_terms "hak pakai" .
+
+ex:HakPengelolaan a owl:Class ;
+    rdfs:subClassOf ex:HakAtasTanah ;
+    rdfs:label "Hak Pengelolaan"@id ;
+    ex:search_terms "hak pengelolaan", "hpl" .
+
+#################################################################
+# 3. PROPERTI OBJEK (rdfs:domain, rdfs:range, rdfs:subPropertyOf)
+#################################################################
+
+# ---------- 3.1 Struktur dan pengadil ----------
+
+ex:memuatBagian a owl:ObjectProperty ;
+    rdfs:label "memuat bagian"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:BagianPutusan ;
+    owl:inverseOf ex:bagianDari .
+
+ex:bagianDari a owl:ObjectProperty ;
+    rdfs:label "bagian dari"@id ;
+    rdfs:domain ex:BagianPutusan ;
+    rdfs:range ex:Putusan .
+
+ex:diputusOleh a owl:ObjectProperty ;
+    rdfs:label "diputus oleh"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:Pengadilan ;
+    owl:inverseOf ex:memutus .
+
+ex:memutus a owl:ObjectProperty ;
+    rdfs:label "memutus"@id ;
+    rdfs:domain ex:Pengadilan ;
+    rdfs:range ex:Putusan .
+
+ex:memutusPerkara a owl:ObjectProperty ;
+    rdfs:label "memutus perkara"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:Perkara .
+
+ex:putusanSebelumnya a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "putusan sebelumnya"@id ;
+    rdfs:comment "Putusan tingkat di bawahnya pada perkara yang sama (banding terhadap tingkat pertama, kasasi terhadap banding). Transitif."@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:Putusan ;
+    owl:inverseOf ex:putusanLanjutan .
+
+ex:putusanLanjutan a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "putusan lanjutan"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:Putusan .
+
+# ---------- 3.2 Hakim: hierarki properti ----------
+
+ex:diperiksaOleh a owl:ObjectProperty ;
+    rdfs:label "diperiksa oleh"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:Hakim .
+
+ex:diketuaiOleh a owl:ObjectProperty ;
+    rdfs:subPropertyOf ex:diperiksaOleh ;
+    rdfs:label "diketuai oleh"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:HakimKetua .
+
+ex:beranggotakanHakim a owl:ObjectProperty ;
+    rdfs:subPropertyOf ex:diperiksaOleh ;
+    rdfs:label "beranggotakan hakim"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:HakimAnggota .
+
+# ---------- 3.3 Pihak dan aparat lain ----------
+
+ex:melibatkanPihak a owl:ObjectProperty ;
+    rdfs:label "melibatkan pihak"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:PihakBerperkara .
+
+ex:mengadiliTerdakwa a owl:ObjectProperty ;
+    rdfs:subPropertyOf ex:melibatkanPihak ;
+    rdfs:label "mengadili terdakwa"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:Terdakwa .
+
+ex:melibatkanPenggugat a owl:ObjectProperty ;
+    rdfs:subPropertyOf ex:melibatkanPihak ;
+    rdfs:label "melibatkan penggugat"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:Penggugat .
+
+ex:melibatkanTergugat a owl:ObjectProperty ;
+    rdfs:subPropertyOf ex:melibatkanPihak ;
+    rdfs:label "melibatkan tergugat"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:Tergugat .
+
+ex:dituntutOleh a owl:ObjectProperty ;
+    rdfs:label "dituntut oleh"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:Jaksa .
+
+ex:dicatatOleh a owl:ObjectProperty ;
+    rdfs:label "dicatat oleh"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:Panitera .
+
+ex:didampingiOleh a owl:ObjectProperty ;
+    rdfs:label "didampingi oleh"@id ;
+    rdfs:domain ex:PihakBerperkara ;
+    rdfs:range ex:PenasihatHukum .
+
+ex:bersaksiDalam a owl:ObjectProperty ;
+    rdfs:label "bersaksi dalam"@id ;
+    rdfs:domain ex:Saksi ;
+    rdfs:range ex:Putusan .
+
+# ---------- 3.4 Pasal dan peraturan: hierarki properti ----------
+
+ex:merujukPasal a owl:ObjectProperty ;
+    rdfs:label "merujuk pasal"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:Pasal .
+
+ex:mendakwaPasal a owl:ObjectProperty ;
+    rdfs:subPropertyOf ex:merujukPasal ;
+    rdfs:label "mendakwa dengan pasal"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:Pasal .
+
+ex:menuntutPasal a owl:ObjectProperty ;
+    rdfs:subPropertyOf ex:merujukPasal ;
+    rdfs:label "menuntut dengan pasal"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:Pasal .
+
+ex:mempertimbangkanPasal a owl:ObjectProperty ;
+    rdfs:subPropertyOf ex:merujukPasal ;
+    rdfs:label "mempertimbangkan pasal"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range ex:Pasal .
+
+ex:terdapatDalam a owl:ObjectProperty ;
+    rdfs:label "terdapat dalam"@id ;
+    rdfs:domain ex:Pasal ;
+    rdfs:range ex:PeraturanPerundangan ;
+    owl:inverseOf ex:memuatPasal .
+
+ex:memuatPasal a owl:ObjectProperty ;
+    rdfs:label "memuat pasal"@id ;
+    rdfs:domain ex:PeraturanPerundangan ;
+    rdfs:range ex:Pasal .
+
+# ---------- 3.5 Perkara, sengketa, dan tanah ----------
+
+ex:berjenisSengketa a owl:ObjectProperty ;
+    rdfs:label "berjenis sengketa"@id ;
+    rdfs:domain ex:Perkara ;
+    rdfs:range ex:JenisSengketaTanah .
+
+ex:objekSengketa a owl:ObjectProperty ;
+    rdfs:label "objek sengketa"@id ;
+    rdfs:domain ex:Perkara ;
+    rdfs:range ex:ObjekTanah .
+
+ex:berstatusHak a owl:ObjectProperty ;
+    rdfs:label "berstatus hak"@id ;
+    rdfs:domain ex:ObjekTanah ;
+    rdfs:range ex:HakAtasTanah .
+
+ex:dibuktikanDengan a owl:ObjectProperty ;
+    rdfs:label "dibuktikan dengan"@id ;
+    rdfs:domain ex:ObjekTanah ;
+    rdfs:range ex:SertifikatTanah .
+
+ex:dimilikiOleh a owl:ObjectProperty ;
+    rdfs:label "dimiliki oleh"@id ;
+    rdfs:domain ex:ObjekTanah ;
+    rdfs:range ex:Orang .
+
+ex:diterbitkanOleh a owl:ObjectProperty ;
+    rdfs:label "diterbitkan oleh"@id ;
+    rdfs:domain ex:SertifikatTanah ;
+    rdfs:range ex:LembagaPertanahan .
+
+# ---------- 3.6 Lokasi: hierarki properti ----------
+
+ex:berlokasiDi a owl:ObjectProperty ;
+    rdfs:label "berlokasi di"@id ;
+    rdfs:range ex:Wilayah .
+
+ex:berkedudukanDi a owl:ObjectProperty ;
+    rdfs:subPropertyOf ex:berlokasiDi ;
+    rdfs:label "berkedudukan di"@id ;
+    rdfs:domain ex:Pengadilan ;
+    rdfs:range ex:Wilayah .
+
+ex:terletakDi a owl:ObjectProperty ;
+    rdfs:subPropertyOf ex:berlokasiDi ;
+    rdfs:label "terletak di"@id ;
+    rdfs:domain ex:ObjekTanah ;
+    rdfs:range ex:Wilayah .
+
+ex:bagianDariWilayah a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "bagian dari wilayah"@id ;
+    rdfs:comment "Hubungan kabupaten/kota ke provinsi (transitif)."@id ;
+    rdfs:domain ex:Wilayah ;
+    rdfs:range ex:Wilayah .
+
+#################################################################
+# 4. PROPERTI DATA (DatatypeProperty)
+#################################################################
+
+# ---------- 4.1 Putusan ----------
+
+ex:idDokumen a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "id dokumen"@id ;
+    rdfs:comment "ID unik putusan pada dataset (kolom id, 32 karakter)."@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range xsd:string .
+
+ex:nomorPutusan a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "nomor putusan"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range xsd:string .
+
+ex:tanggalPutusan a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "tanggal putusan"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range xsd:date .
+
+ex:tahunPutusan a owl:DatatypeProperty ;
+    rdfs:label "tahun putusan"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range xsd:gYear .
+
+ex:klasifikasi a owl:DatatypeProperty ;
+    rdfs:label "klasifikasi"@id ;
+    rdfs:comment "Nilai mentah kolom klasifikasi dataset (misal pidana-umum, pidana-khusus)."@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range xsd:string .
+
+ex:subKlasifikasi a owl:DatatypeProperty ;
+    rdfs:label "sub klasifikasi"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range xsd:string .
+
+ex:pidanaPenjaraBulan a owl:DatatypeProperty ;
+    rdfs:label "pidana penjara (bulan)"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range xsd:nonNegativeInteger .
+
+ex:pidanaDenda a owl:DatatypeProperty ;
+    rdfs:label "pidana denda (rupiah)"@id ;
+    rdfs:domain ex:Putusan ;
+    rdfs:range xsd:decimal .
+
+# ---------- 4.2 Bagian putusan ----------
+
+ex:tagBagian a owl:DatatypeProperty ;
+    rdfs:label "tag bagian"@id ;
+    rdfs:comment "Nama tag asli bagian pada dataset, misal kepala_putusan atau amar_putusan."@id ;
+    rdfs:domain ex:BagianPutusan ;
+    rdfs:range xsd:string .
+
+ex:teks a owl:DatatypeProperty ;
+    rdfs:label "teks"@id ;
+    rdfs:comment "Isi teks bagian putusan (sumber embedding SBERT pada Tahap 5)."@id ;
+    rdfs:domain ex:BagianPutusan ;
+    rdfs:range xsd:string .
+
+# ---------- 4.3 Nama: hierarki properti data ----------
+
+ex:nama a owl:DatatypeProperty ;
+    rdfs:label "nama"@id ;
+    rdfs:range xsd:string .
+
+ex:namaOrang a owl:DatatypeProperty ;
+    rdfs:subPropertyOf ex:nama ;
+    rdfs:label "nama orang"@id ;
+    rdfs:domain ex:Orang ;
+    rdfs:range xsd:string .
+
+ex:namaLembaga a owl:DatatypeProperty ;
+    rdfs:subPropertyOf ex:nama ;
+    rdfs:label "nama lembaga"@id ;
+    rdfs:domain ex:Lembaga ;
+    rdfs:range xsd:string .
+
+ex:namaWilayah a owl:DatatypeProperty ;
+    rdfs:subPropertyOf ex:nama ;
+    rdfs:label "nama wilayah"@id ;
+    rdfs:domain ex:Wilayah ;
+    rdfs:range xsd:string .
+
+# ---------- 4.4 Peraturan dan pasal ----------
+
+ex:judulPeraturan a owl:DatatypeProperty ;
+    rdfs:label "judul peraturan"@id ;
+    rdfs:domain ex:PeraturanPerundangan ;
+    rdfs:range xsd:string .
+
+ex:nomorPeraturan a owl:DatatypeProperty ;
+    rdfs:label "nomor peraturan"@id ;
+    rdfs:domain ex:PeraturanPerundangan ;
+    rdfs:range xsd:string .
+
+ex:tahunPeraturan a owl:DatatypeProperty ;
+    rdfs:label "tahun peraturan"@id ;
+    rdfs:domain ex:PeraturanPerundangan ;
+    rdfs:range xsd:gYear .
+
+ex:nomorPasal a owl:DatatypeProperty ;
+    rdfs:label "nomor pasal"@id ;
+    rdfs:domain ex:Pasal ;
+    rdfs:range xsd:string .
+
+# ---------- 4.5 Tanah ----------
+
+ex:luasTanah a owl:DatatypeProperty ;
+    rdfs:label "luas tanah (m2)"@id ;
+    rdfs:domain ex:ObjekTanah ;
+    rdfs:range xsd:decimal .
+
+ex:nomorSertifikat a owl:DatatypeProperty ;
+    rdfs:label "nomor sertifikat"@id ;
+    rdfs:domain ex:SertifikatTanah ;
+    rdfs:range xsd:string .
+
+#################################################################
+# 5. KETIDAKCOCOKAN KELAS (owl:AllDisjointClasses)
+#    Dipakai untuk validasi logika T-Box dan deteksi inkonsistensi A-Box
+#################################################################
+
+[] a owl:AllDisjointClasses ;
+   owl:members ( ex:DokumenHukum ex:BagianPutusan ex:Pasal ex:Orang ex:Lembaga
+                 ex:Wilayah ex:ObjekTanah ex:HakAtasTanah ex:Perkara ex:JenisSengketaTanah ) .
+
+[] a owl:AllDisjointClasses ;
+   owl:members ( ex:Putusan ex:PeraturanPerundangan ex:SertifikatTanah ) .
+
+[] a owl:AllDisjointClasses ;
+   owl:members ( ex:PutusanPidana ex:PutusanPerdata ex:PutusanTataUsahaNegara ) .
+
+[] a owl:AllDisjointClasses ;
+   owl:members ( ex:PutusanPidanaUmum ex:PutusanPidanaKhusus ) .
+
+[] a owl:AllDisjointClasses ;
+   owl:members ( ex:PerkaraPidana ex:PerkaraPerdata ex:PerkaraTUN ) .
+
+[] a owl:AllDisjointClasses ;
+   owl:members ( ex:PengadilanNegeri ex:PengadilanTinggi ex:MahkamahAgung ) .
+
+[] a owl:AllDisjointClasses ;
+   owl:members ( ex:HakMilik ex:HakGunaUsaha ex:HakGunaBangunan ex:HakPakai ex:HakPengelolaan ) .
+
+[] a owl:AllDisjointClasses ;
+   owl:members ( ex:Provinsi ex:KabupatenKota ) .
+
+#################################################################
+# 6. KELAS TERDEFINISI UNTUK PENALARAN (disimpulkan reasoner, Tahap 4)
+#    Ditulis sebagai syarat cukup (subClassOf dengan sisi kiri anonim)
+#    agar kompatibel dengan reasoner berbasis aturan (OWL-RL).
+#################################################################
+
+# Perkara yang punya jenis sengketa tanah => PerkaraPertanahan
+[ a owl:Class ;
+  owl:intersectionOf ( ex:Perkara
+      [ a owl:Restriction ;
+        owl:onProperty ex:berjenisSengketa ;
+        owl:someValuesFrom ex:JenisSengketaTanah ] ) ]
+    rdfs:subClassOf ex:PerkaraPertanahan .
+
+# Perkara yang punya objek sengketa berupa tanah => PerkaraPertanahan
+[ a owl:Class ;
+  owl:intersectionOf ( ex:Perkara
+      [ a owl:Restriction ;
+        owl:onProperty ex:objekSengketa ;
+        owl:someValuesFrom ex:ObjekTanah ] ) ]
+    rdfs:subClassOf ex:PerkaraPertanahan .
+
+# Pasal yang terdapat dalam peraturan pertanahan => PasalPertanahan
+[ a owl:Class ;
+  owl:intersectionOf ( ex:Pasal
+      [ a owl:Restriction ;
+        owl:onProperty ex:terdapatDalam ;
+        owl:someValuesFrom ex:PeraturanPertanahan ] ) ]
+    rdfs:subClassOf ex:PasalPertanahan .
+
+# Putusan yang memutus perkara pertanahan => PutusanPertanahan
+[ a owl:Class ;
+  owl:intersectionOf ( ex:Putusan
+      [ a owl:Restriction ;
+        owl:onProperty ex:memutusPerkara ;
+        owl:someValuesFrom ex:PerkaraPertanahan ] ) ]
+    rdfs:subClassOf ex:PutusanPertanahan .
+
+# Putusan yang merujuk pasal pertanahan => PutusanPertanahan
+[ a owl:Class ;
+  owl:intersectionOf ( ex:Putusan
+      [ a owl:Restriction ;
+        owl:onProperty ex:merujukPasal ;
+        owl:someValuesFrom ex:PasalPertanahan ] ) ]
+    rdfs:subClassOf ex:PutusanPertanahan .
