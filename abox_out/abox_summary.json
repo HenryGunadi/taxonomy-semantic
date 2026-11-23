@@ -1,0 +1,218 @@
+{
+  "generated_at": "2026-11-23T02:18:30+00:00",
+  "source": "https://huggingface.co/datasets/Azzindani/ID_Supreme_Court_Parquet",
+  "storage": "MySQL tables documents, paragraphs (full A-Box)",
+  "sample": {
+    "size": 50,
+    "seed": 42,
+    "stratified_by": "klasifikasi"
+  },
+  "stats": {
+    "documents": 22630,
+    "paragraphs": 215338,
+    "tags": {
+      "kepala_putusan": {
+        "sections": 22628,
+        "docs": 22628,
+        "min_len": 35,
+        "avg_len": 335,
+        "max_len": 14389
+      },
+      "amar_putusan": {
+        "sections": 22617,
+        "docs": 22617,
+        "min_len": 77,
+        "avg_len": 1543,
+        "max_len": 168219
+      },
+      "riwayat_perkara": {
+        "sections": 22369,
+        "docs": 22369,
+        "min_len": 28,
+        "avg_len": 754,
+        "max_len": 266121
+      },
+      "riwayat_dakwaan": {
+        "sections": 22297,
+        "docs": 22297,
+        "min_len": 81,
+        "avg_len": 12218,
+        "max_len": 438083
+      },
+      "penutup": {
+        "sections": 22194,
+        "docs": 22194,
+        "min_len": 18,
+        "avg_len": 751,
+        "max_len": 86771
+      },
+      "fakta": {
+        "sections": 21827,
+        "docs": 21827,
+        "min_len": 78,
+        "avg_len": 23757,
+        "max_len": 1110422
+      },
+      "riwayat_tuntutan": {
+        "sections": 21667,
+        "docs": 21667,
+        "min_len": 77,
+        "avg_len": 3601,
+        "max_len": 355554
+      },
+      "identitas": {
+        "sections": 19749,
+        "docs": 19749,
+        "min_len": 63,
+        "avg_len": 600,
+        "max_len": 241303
+      },
+      "riwayat_penahanan": {
+        "sections": 18644,
+        "docs": 18644,
+        "min_len": 20,
+        "avg_len": 935,
+        "max_len": 196176
+      },
+      "pertimbangan_hukum": {
+        "sections": 10730,
+        "docs": 10730,
+        "min_len": 816,
+        "avg_len": 14469,
+        "max_len": 374783
+      },
+      "fakta_hukum": {
+        "sections": 10616,
+        "docs": 10616,
+        "min_len": 115,
+        "avg_len": 8081,
+        "max_len": 242804
+      }
+    },
+    "text_length": {
+      "min": 18,
+      "avg": 5644,
+      "max": 1110422,
+      "over_65535": 1430
+    },
+    "klasifikasi": [
+      {
+        "klasifikasi": "pidana-khusus",
+        "sub_klasifikasi": "pidana-khusus",
+        "docs": 11901
+      },
+      {
+        "klasifikasi": "pidana-umum",
+        "sub_klasifikasi": "pidana-umum",
+        "docs": 10729
+      }
+    ]
+  },
+  "checks": [
+    {
+      "status": "PASS",
+      "check": "Tables exist",
+      "detail": "documents, paragraphs"
+    },
+    {
+      "status": "PASS",
+      "check": "Columns exist",
+      "detail": ""
+    },
+    {
+      "status": "PASS",
+      "check": "paragraphs.value column type",
+      "detail": "LONGTEXT"
+    },
+    {
+      "status": "PASS",
+      "check": "documents row count",
+      "detail": "22630 (matches expected 22630)"
+    },
+    {
+      "status": "INFO",
+      "check": "paragraphs row count",
+      "detail": "215338 (avg 9.5 sections per decision)"
+    },
+    {
+      "status": "PASS",
+      "check": "Duplicate document ids",
+      "detail": "0"
+    },
+    {
+      "status": "PASS",
+      "check": "Document ids are 32 chars",
+      "detail": "0 bad"
+    },
+    {
+      "status": "PASS",
+      "check": "Orphan paragraphs (no parent document)",
+      "detail": "0"
+    },
+    {
+      "status": "WARN",
+      "check": "Documents with no paragraphs",
+      "detail": "2 (empty in source if it matches the parquet)"
+    },
+    {
+      "status": "PASS",
+      "check": "Section order intact (positions 0..n-1 per document)",
+      "detail": "0 documents with gaps"
+    },
+    {
+      "status": "PASS",
+      "check": "Empty/NULL tags",
+      "detail": "0"
+    },
+    {
+      "status": "PASS",
+      "check": "All tags are known",
+      "detail": "11 distinct"
+    },
+    {
+      "status": "INFO",
+      "check": "Documents repeating the same tag",
+      "detail": "0 (doc, tag) pairs"
+    },
+    {
+      "status": "INFO",
+      "check": "Documents without an 'amar_putusan' (verdict) section",
+      "detail": "13"
+    },
+    {
+      "status": "PASS",
+      "check": "Blank section values",
+      "detail": "0"
+    },
+    {
+      "status": "PASS",
+      "check": "Stringified-numpy leftovers ('dtype=object') in text",
+      "detail": "0"
+    },
+    {
+      "status": "PASS",
+      "check": "Values exactly 65535 bytes (TEXT truncation signature)",
+      "detail": "0"
+    },
+    {
+      "status": "INFO",
+      "check": "Values longer than 65535 chars",
+      "detail": "1430 (proves long text is not truncated)"
+    },
+    {
+      "status": "INFO",
+      "check": "Section text length (chars)",
+      "detail": "min 18, avg 5644, max 1110422"
+    },
+    {
+      "status": "PASS",
+      "check": "NULL/empty klasifikasi or sub_klasifikasi",
+      "detail": "0"
+    },
+    {
+      "status": "INFO",
+      "check": "klasifikasi coverage",
+      "detail": "criminal only (pidana-umum / pidana-khusus); no perdata/TUN rows"
+    }
+  ]
+}
