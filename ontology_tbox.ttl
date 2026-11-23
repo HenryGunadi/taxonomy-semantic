@@ -4,6 +4,9 @@
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 @prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix schema:  <https://schema.org/> .
+@prefix wd:      <http://www.wikidata.org/entity/> .
+@prefix dbr:     <http://dbpedia.org/resource/> .
 
 #################################################################
 # 0. HEADER ONTOLOGI
@@ -12,7 +15,7 @@
 <http://example.org/hukumtanah> a owl:Ontology ;
     dcterms:title "T-Box Asisten AI Bantuan Hukum Pertanahan dan Putusan Pengadilan"@id ;
     dcterms:description "Skema ontologi terpusat (T-Box) untuk topik nomor 04 proyek SDG Web Semantik (Goal 16: Perdamaian, Keadilan, dan Kelembagaan Tangguh). Sumber A-Box utama: dataset putusan Mahkamah Agung RI (ID_Supreme_Court_Parquet) dan regulasi pertanahan."@id ;
-    owl:versionInfo "1.0" .
+    owl:versionInfo "1.1" .
 
 dcterms:title       a owl:AnnotationProperty .
 dcterms:description a owl:AnnotationProperty .
@@ -27,12 +30,21 @@ ex:search_terms a owl:DatatypeProperty ;
     rdfs:range xsd:string .
 
 #################################################################
+# 1b. AKAR TUNGGAL TAKSONOMI (Single Root Taxonomy Tree)
+#################################################################
+
+ex:EntitasHukum a owl:Class ;
+    rdfs:label "Entitas Hukum"@id ;
+    rdfs:comment "Akar tunggal taksonomi. Seluruh kelas domain pertanahan adalah turunan kelas ini. Sepuluh cabang utamanya saling disjoint (lihat bagian 5)."@id .
+
+#################################################################
 # 2. HIERARKI KELAS (rdfs:subClassOf)
 #################################################################
 
 # ---------- 2.1 Dokumen hukum ----------
 
 ex:DokumenHukum a owl:Class ;
+    rdfs:subClassOf ex:EntitasHukum ;
     rdfs:label "Dokumen Hukum"@id ;
     rdfs:comment "Kelas induk dokumen hukum: putusan, peraturan perundang-undangan, dan sertifikat tanah."@id .
 
@@ -111,6 +123,7 @@ ex:SertifikatTanah a owl:Class ;
 # ---------- 2.2 Pasal ----------
 
 ex:Pasal a owl:Class ;
+    rdfs:subClassOf ex:EntitasHukum ;
     rdfs:label "Pasal"@id ;
     rdfs:comment "Pasal atau ketentuan dalam suatu peraturan yang dirujuk putusan (dakwaan, tuntutan, pertimbangan)."@id ;
     ex:search_terms "pasal", "ayat", "melanggar pasal", "ketentuan pasal" .
@@ -123,6 +136,7 @@ ex:PasalPertanahan a owl:Class ;
 # ---------- 2.3 Bagian putusan (selaras dengan tag di kolom paragraphs dataset) ----------
 
 ex:BagianPutusan a owl:Class ;
+    rdfs:subClassOf ex:EntitasHukum ;
     rdfs:label "Bagian Putusan"@id ;
     rdfs:comment "Satu bagian struktural dari putusan. Dipakai sebagai unit potongan teks untuk GraphRAG dan semantic search."@id .
 
@@ -195,6 +209,7 @@ ex:BagianPenutup a owl:Class ;
 # ---------- 2.3b Perkara dan jenis sengketa tanah ----------
 
 ex:Perkara a owl:Class ;
+    rdfs:subClassOf ex:EntitasHukum ;
     rdfs:label "Perkara"@id ;
     rdfs:comment "Perkara hukum yang diperiksa pengadilan. Satu perkara diputus oleh satu atau lebih putusan (tingkat pertama, banding, kasasi)."@id ;
     ex:search_terms "perkara", "kasus", "sengketa" .
@@ -218,6 +233,7 @@ ex:PerkaraPertanahan a owl:Class ;
     ex:search_terms "perkara tanah", "sengketa tanah", "kasus pertanahan" .
 
 ex:JenisSengketaTanah a owl:Class ;
+    rdfs:subClassOf ex:EntitasHukum ;
     rdfs:label "Jenis Sengketa Tanah"@id ;
     rdfs:comment "Taksonomi jenis masalah hukum pertanahan. Dipakai asisten AI untuk mengklasifikasikan pertanyaan pengguna."@id .
 
@@ -264,6 +280,7 @@ ex:SertifikatGanda a owl:Class ;
 # ---------- 2.4 Pihak dan aparat penegak hukum ----------
 
 ex:Orang a owl:Class ;
+    rdfs:subClassOf ex:EntitasHukum ;
     rdfs:label "Orang"@id ;
     rdfs:comment "Orang perseorangan yang disebut dalam dokumen hukum."@id .
 
@@ -329,6 +346,7 @@ ex:PenasihatHukum a owl:Class ;
 # ---------- 2.5 Lembaga ----------
 
 ex:Lembaga a owl:Class ;
+    rdfs:subClassOf ex:EntitasHukum ;
     rdfs:label "Lembaga"@id ;
     rdfs:comment "Lembaga atau instansi yang terlibat dalam proses hukum pertanahan."@id .
 
@@ -366,6 +384,7 @@ ex:LembagaPertanahan a owl:Class ;
 # ---------- 2.6 Wilayah ----------
 
 ex:Wilayah a owl:Class ;
+    rdfs:subClassOf ex:EntitasHukum ;
     rdfs:label "Wilayah"@id ;
     rdfs:comment "Satuan wilayah administratif. Kandidat penautan owl:sameAs ke Wikidata/DBpedia pada Tahap 3."@id .
 
@@ -382,11 +401,13 @@ ex:KabupatenKota a owl:Class ;
 # ---------- 2.7 Objek tanah dan hak atas tanah ----------
 
 ex:ObjekTanah a owl:Class ;
+    rdfs:subClassOf ex:EntitasHukum ;
     rdfs:label "Objek Tanah"@id ;
     rdfs:comment "Bidang tanah yang menjadi objek perkara."@id ;
     ex:search_terms "tanah", "bidang tanah", "lahan", "persil", "objek sengketa" .
 
 ex:HakAtasTanah a owl:Class ;
+    rdfs:subClassOf ex:EntitasHukum ;
     rdfs:label "Hak atas Tanah"@id ;
     rdfs:comment "Jenis hak atas tanah menurut hukum agraria."@id ;
     ex:search_terms "hak atas tanah", "status hak" .
